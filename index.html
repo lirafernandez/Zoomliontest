@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard EPP - Zoomlion</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script defer src="dashboard.js"></script>
+</head>
+<body>
+    <div class="header-zoomlion">
+        <img src="1157.HK_BIG (1).png" class="logo-zoomlion" alt="Zoomlion logo" />
+        <h1>Dashboard EPP <span class="zoomlion-name">ZOOMLION</span></h1>
+    </div>
+    <div id="alertas" class="alertas-green"></div>
+    <div class="filtros">
+        <label>Área: <select id="areaFilter"></select></label>
+        <label>Descripción: <select id="descFilter"></select></label>
+        <label>Tipo de Entrega: <select id="tipoEntregaFilter"></select></label>
+        <label>Desde: <input type="date" id="desdeFilter"></label>
+        <label>Hasta: <input type="date" id="hastaFilter"></label>
+        <button onclick="resetFiltros()">Restablecer filtros</button>
+    </div>
+    <div class="kpis">
+        <div class="kpi kpi-total">
+            <div>Total Entregas</div>
+            <b id="kpiTotalEntregas">0</b>
+        </div>
+        <div class="kpi kpi-gasto">
+            <div>Total Gasto</div>
+            <b id="kpiTotalGasto">$0</b>
+        </div>
+        <div class="kpi kpi-tipos">
+            <div>Tipos de EPP</div>
+            <b id="kpiTiposEPP">0</b>
+        </div>
+        <div class="kpi kpi-top-epp">
+            <div>EPP con más flujo</div>
+            <b id="kpiTopEPP">N/A</b>
+        </div>
+        <div class="kpi kpi-top-tipo">
+            <div>Tipo Entrega Top</div>
+            <b id="kpiTipoEntregaTop">N/A</b>
+        </div>
+        <div class="kpi kpi-top-area">
+            <div>Área que más consumió</div>
+            <b id="kpiAreaTop">N/A</b>
+        </div>
+    </div>
+    <div class="graficos">
+        <div class="grafico-caja">
+            <h3>Gasto total mensual</h3>
+            <canvas id="gastoMesChart"></canvas>
+        </div>
+        <div class="grafico-caja">
+            <h3>Evolución mensual por tipo de entrega</h3>
+            <canvas id="evolucionTipoEntregaChart"></canvas>
+        </div>
+        <div class="grafico-caja">
+            <h3>Top 5 EPP más usados/cambiados</h3>
+            <canvas id="eppMasUsadosChart"></canvas>
+        </div>
+        <div class="grafico-caja grafico-comparativa-area">
+            <h3>Comparativa de Gasto vs Cantidad entregada por Área</h3>
+            <canvas id="gastoVsCantidadAreaChart"></canvas>
+        </div>
+    </div>
+</body>
+</html>
