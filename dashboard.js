@@ -361,7 +361,84 @@ function dibujarGraficos() {
 
     mostrarKPIs(filtrados, porEpp, entregasPorTipo);
     mostrarAlertas(filtrados);
+    mostrarNombres(filtrados);
 }
+// Mostrar lista de nombres que recibieron EPP y tipo de entrega
+function mostrarNombres(filtrados) {
+    if (!filtrados.length) {
+        document.getElementById('tablaNombres').innerHTML = "<span style='color:#888;'>No hay entregas en el periodo seleccionado.<br>选定期间无发放记录。</span>";
+        return;
+    }
+    // Detectar la columna real de nombre (soporta NOMBRE, NOMBRE ENTRE, etc)
+    function obtenerCampoNombre(obj) {
+        for (let key of Object.keys(obj)) {
+            // acepta "nombre", "nombre entre", etc., sin mayúsculas ni espacios
+            if (key.trim().toLowerCase().replace(/\s+/g, '') === 'nombreentre') return key;
+        }
+        // fallback: busca la palabra 'nombre' en el campo
+        for (let key of Object.keys(obj)) {
+            if (key.trim().toLowerCase().includes('nombre')) return key;
+        }
+        return null;
+    }
+    const campoNombre = obtenerCampoNombre(filtrados[0]);
+    if (!campoNombre) {
+        document.getElementById('tablaNombres').innerHTML = "<span style='color:#e00;'>No se encontró la columna NOMBRE ENTRE.<br>未找到“NOMBRE ENTRE”列。</span>";
+        return;
+    }
+    // Agrupar: nombre => [{tipoEntrega, cantidad, fecha, descripcion, area}]
+    let personas = {};
+    filtrados.forEach(d => {
+        let nombre = (d[campoNombre] || '').trim();
+        if (!nombre) return;
+        tiposEntregaList.forEach(tipo => {
+            let [tipoES, tipoCN] = tipo.split(' / ');
+            let cantidad = parseFloat(d[tipoES]) || parseFloat(d[tipoCN]) || 0;
+            if (cantidad > 0) {
+                if (!personas[nombre]) personas[nombre] = [];
+                personas[nombre].push({
+                    tipo: tipo,
+                    cantidad: cantidad,
+                    fecha: d['FECHA'] || '',
+                    descripcion: d['DESCRIPCION'] || '',
+                    area: d['AREA'] || ''
+                });
+            }
+        });
+    });
+    let nombresUnicos = Object.keys(personas).sort((a, b) => a.localeCompare(b, 'es', {sensitivity:'base'}));
+    if (nombresUnicos.length === 0) {
+        document.getElementById('tablaNombres').innerHTML = "<span style='color:#888;'>No hay entregas en el periodo seleccionado.<br>选定期间无发放记录。</span>";
+        return;
+    }
+    let html = `<table style="border-collapse:collapse;width:100%;font-size:1em;">
+        <thead>
+            <tr style="background:#e8fbe9;">
+                <th style="padding:6px 10px;">Nombre / 姓名</th>
+                <th style="padding:6px 10px;">Tipo de Entrega / 发放类型</th>
+                <th style="padding:6px 10px;">Cantidad / 数量</th>
+                <th style="padding:6px 10px;">Descripción / 描述</th>
+                <th style="padding:6px 10px;">Área / 区域</th>
+                <th style="padding:6px 10px;">Fecha / 日期</th>
+            </tr>
+        </thead>
+        <tbody>`;
+    nombresUnicos.forEach(nombre => {
+        personas[nombre].forEach(entrega => {
+            html += `<tr>
+                <td style="border-bottom:1px solid #e0f0e2;padding:6px 10px;">${nombre}</td>
+                <td style="border-bottom:1px solid #e0f0e2;padding:6px 10px;">${entrega.tipo}</td>
+                <td style="border-bottom:1px solid #e0f0e2;padding:6px 10px;">${entrega.cantidad}</td>
+                <td style="border-bottom:1px solid #e0f0e2;padding:6px 10px;">${entrega.descripcion}</td>
+                <td style="border-bottom:1px solid #e0f0e2;padding:6px 10px;">${entrega.area}</td>
+                <td style="border-bottom:1px solid #e0f0e2;padding:6px 10px;">${entrega.fecha}</td>
+            </tr>`;
+        });
+    });
+    html += "</tbody></table>";
+    document.getElementById('tablaNombres').innerHTML = html;
+}
+
 
 function graficar(id, tipo, labels, data, titulo, color, tipoForzado, showValues, extraOptions = {}) {
     if (charts[id]) charts[id].destroy();
