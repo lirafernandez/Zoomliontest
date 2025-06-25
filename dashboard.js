@@ -1,5 +1,11 @@
 const CSV_URL = './epp.csv';
-const tiposEntregaList = ['ENTREGA NUEVO', 'CAMBIO', 'EXTRAVIO', 'EPP RECUPERADO'];
+// Español / 中文简体
+const tiposEntregaList = [
+    'ENTREGA NUEVO / 新发放',
+    'CAMBIO / 更换',
+    'EXTRAVIO / 丢失',
+    'EPP RECUPERADO / 回收劳保'
+];
 let datos = [];
 let charts = {};
 
@@ -12,7 +18,7 @@ window.onload = function () {
             dibujarGraficos();
         })
         .catch(() => {
-            document.body.innerHTML += '<div style="color:red; font-size:1.1em; text-align:center; margin-top:18px;">No se pudo cargar el archivo epp.csv.<br>Verifica que exista en tu carpeta y que el archivo sea accesible.<br>Abre este dashboard SIEMPRE desde un servidor web (Live Server, Python, IIS, etc) y nunca como file://</div>';
+            document.body.innerHTML += '<div style="color:red; font-size:1.1em; text-align:center; margin-top:18px;">No se pudo cargar el archivo epp.csv.<br>Verifica que exista en tu carpeta y que el archivo sea accesible.<br>Abre este dashboard SIEMPRE desde un servidor web (Live Server, Python, IIS, etc) y nunca como file://<br>无法加载epp.csv文件，请确保文件存在于当前目录且可访问。请务必通过Web服务器方式打开本页面。</div>';
         });
     document.getElementById('desdeFilter').addEventListener('change', dibujarGraficos);
     document.getElementById('hastaFilter').addEventListener('change', dibujarGraficos);
@@ -42,8 +48,8 @@ function csvToJson(csv) {
 function llenarFiltros() {
     const areaSel = document.getElementById('areaFilter');
     const descSel = document.getElementById('descFilter');
-    areaSel.innerHTML = '<option value="">Todas</option>';
-    descSel.innerHTML = '<option value="">Todas</option>';
+    areaSel.innerHTML = '<option value="">Todas / 全部</option>';
+    descSel.innerHTML = '<option value="">Todas / 全部</option>';
     for (const area of [...new Set(datos.map(d => d.AREA).filter(x => x))].sort())
         areaSel.innerHTML += `<option value="${area}">${area}</option>`;
     for (const desc of [...new Set(datos.map(d => d['DESCRIPCION']).filter(x => x))].sort())
@@ -52,7 +58,7 @@ function llenarFiltros() {
     descSel.onchange = dibujarGraficos;
 
     const tipoEntregaSel = document.getElementById('tipoEntregaFilter');
-    tipoEntregaSel.innerHTML = '<option value="">Todos</option>';
+    tipoEntregaSel.innerHTML = '<option value="">Todos / 全部</option>';
     for (const tipo of tiposEntregaList)
         tipoEntregaSel.innerHTML += `<option value="${tipo}">${tipo}</option>`;
     tipoEntregaSel.onchange = dibujarGraficos;
@@ -77,7 +83,8 @@ function filtrarDatos() {
         let ok = true;
         if (area && d.AREA !== area) ok = false;
         if (desc && d['DESCRIPCION'] !== desc) ok = false;
-        if (tipoEntrega && !(parseInt(d[tipoEntrega]) > 0)) ok = false;
+        // Soporta ambas etiquetas en español/chino
+        if (tipoEntrega && !(parseInt(d[tipoEntrega.split(' / ')[0]]) > 0 || parseInt(d[tipoEntrega.split(' / ')[1]]) > 0)) ok = false;
         if (desde && d.FECHA && dateToISO(d.FECHA) < desde) ok = false;
         if (hasta && d.FECHA && dateToISO(d.FECHA) > hasta) ok = false;
         return ok;
@@ -124,10 +131,10 @@ function mostrarKPIs(filtrados, porEpp, entregasPorTipo) {
     document.getElementById('kpiTotalGasto').innerText = '$' + totalGasto.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     document.getElementById('kpiTiposEPP').innerText = tiposEPP;
     document.getElementById('kpiTopEPP').innerText = topEpp;
-    document.getElementById('kpiTopEPP').previousElementSibling.innerText = "EPP con más flujo";
+    document.getElementById('kpiTopEPP').previousElementSibling.innerText = "EPP con más flujo / 流通最多劳保";
     document.getElementById('kpiTipoEntregaTop').innerText = tipoEntregaTop;
     document.getElementById('kpiAreaTop').innerText = areaTop;
-    document.getElementById('kpiAreaTop').previousElementSibling.innerText = "Área que más consumió";
+    document.getElementById('kpiAreaTop').previousElementSibling.innerText = "Área que más consumió / 消耗最多区域";
 }
 
 function dibujarGraficos() {
@@ -136,7 +143,7 @@ function dibujarGraficos() {
     // Gasto total mensual
     let gastoMes = {};
     filtrados.forEach(d => {
-        let mes = dateToISO(d['FECHA']) ? dateToISO(d['FECHA']).substring(0, 7) : 'Sin dato';
+        let mes = dateToISO(d['FECHA']) ? dateToISO(d['FECHA']).substring(0, 7) : 'Sin dato / 无数据';
         let gasto = obtenerGastoFila(d);
         gastoMes[mes] = (gastoMes[mes] || 0) + gasto;
     });
@@ -146,7 +153,7 @@ function dibujarGraficos() {
         'line',
         mesesGasto,
         mesesGasto.map(m => gastoMes[m]),
-        'Gasto total mensual',
+        'Gasto total mensual / 每月总支出',
         '#005a9e',
         undefined,
         true,
@@ -158,10 +165,12 @@ function dibujarGraficos() {
     let dataEvolucion = {};
     tiposEntregaList.forEach(tipo => dataEvolucion[tipo] = {});
     filtrados.forEach(d => {
-        let mes = dateToISO(d['FECHA']) ? dateToISO(d['FECHA']).substring(0, 7) : 'Sin dato';
+        let mes = dateToISO(d['FECHA']) ? dateToISO(d['FECHA']).substring(0, 7) : 'Sin dato / 无数据';
         mesesSet.add(mes);
         tiposEntregaList.forEach(tipo => {
-            let val = parseFloat(d[tipo]);
+            let key = tipo.split(' / ')[0];
+            let keyCN = tipo.split(' / ')[1];
+            let val = parseFloat(d[key]) || parseFloat(d[keyCN]);
             if (!isNaN(val) && val > 0) dataEvolucion[tipo][mes] = (dataEvolucion[tipo][mes] || 0) + val;
         });
     });
@@ -190,10 +199,12 @@ function dibujarGraficos() {
     const TOP_EPP = 5;
     let usoPorEpp = {};
     filtrados.forEach(d => {
-        let key = d['DESCRIPCION'] || 'Sin dato';
+        let key = d['DESCRIPCION'] || 'Sin dato / 无数据';
         let totalUso = 0;
         tiposEntregaList.forEach(tipo => {
-            let val = parseFloat(d[tipo]);
+            let k = tipo.split(' / ')[0];
+            let kcn = tipo.split(' / ')[1];
+            let val = parseFloat(d[k]) || parseFloat(d[kcn]);
             if (!isNaN(val) && val > 0) totalUso += val;
         });
         usoPorEpp[key] = (usoPorEpp[key] || 0) + totalUso;
@@ -208,15 +219,15 @@ function dibujarGraficos() {
         'bar',
         eppLabels,
         eppData,
-        'Top 5 EPP más usados/cambiados',
+        'Top 5 EPP más usados/cambiados / 最常用/更换前五劳保',
         '#36a2eb',
         'horizontalBar',
         false,
         { fontSize: 13, height: 300 }
     );
 
-    // ----------- GRAFICA COMPARATIVA GASTO VS CANTIDAD POR ÁREA -----------
-    const normalizaArea = s => (s || 'Sin dato')
+    // ----------- GRAFICA COMPARATIVA GASTO VS CANTIDAD POR ÁREA (Áreas en X, valores en Y) -----------
+    const normalizaArea = s => (s || 'Sin dato / 无数据')
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
         .replace(/\s+/g, ' ')
         .trim()
@@ -229,7 +240,6 @@ function dibujarGraficos() {
         cantidadPorArea[area] = (cantidadPorArea[area] || 0) + (parseFloat(d['CANTIDAD']) || 0);
     });
 
-    // Todas las áreas, ordenadas por gasto descendente
     let areaLabels = Object.keys(gastoPorArea)
         .sort((a, b) => gastoPorArea[b] - gastoPorArea[a]);
     let gastoData = areaLabels.map(a => gastoPorArea[a]);
@@ -249,7 +259,7 @@ function dibujarGraficos() {
             labels: areaLabels,
             datasets: [
                 {
-                    label: 'Gasto (%)',
+                    label: 'Gasto (%) / 支出 (%)',
                     data: gastoDataNorm,
                     backgroundColor: 'rgba(76, 175, 80, 0.85)',
                     borderColor: '#388e3c',
@@ -260,14 +270,13 @@ function dibujarGraficos() {
                         color: '#388e3c',
                         font: { size: 11, weight: 'bold' },
                         formatter: (v, ctx) => {
-                            // Etiqueta solo para barras no muy pequeñas
                             const real = gastoData[ctx.dataIndex];
                             return `$${real.toLocaleString(undefined, {maximumFractionDigits:0})}`;
                         }
                     }
                 },
                 {
-                    label: 'Cantidad (%)',
+                    label: 'Cantidad (%) / 数量 (%)',
                     data: cantidadDataNorm,
                     backgroundColor: 'rgba(33, 150, 243, 0.80)',
                     borderColor: '#1565c0',
@@ -286,7 +295,7 @@ function dibujarGraficos() {
             ]
         },
         options: {
-            indexAxis: 'x', // Áreas en X
+            indexAxis: 'x',
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
@@ -295,10 +304,10 @@ function dibujarGraficos() {
                     callbacks: {
                         label: function(context) {
                             let idx = context.dataIndex;
-                            if (context.dataset.label === 'Gasto (%)') {
-                                return `Gasto: $${gastoData[idx].toLocaleString(undefined,{maximumFractionDigits:2})} (${context.parsed.y.toFixed(1)}%)`;
+                            if (context.dataset.label.includes('Gasto')) {
+                                return `Gasto / 支出: $${gastoData[idx].toLocaleString(undefined,{maximumFractionDigits:2})} (${context.parsed.y.toFixed(1)}%)`;
                             } else {
-                                return `Cantidad: ${cantidadData[idx].toLocaleString()} (${context.parsed.y.toFixed(1)}%)`;
+                                return `Cantidad / 数量: ${cantidadData[idx].toLocaleString()} (${context.parsed.y.toFixed(1)}%)`;
                             }
                         }
                     }
@@ -320,7 +329,7 @@ function dibujarGraficos() {
                     max: 105,
                     title: {
                         display: true,
-                        text: 'Porcentaje sobre el máximo de cada métrica (%)',
+                        text: 'Porcentaje sobre el máximo de cada métrica (%) / 各指标最大值百分比',
                         font: { size: 13 }
                     },
                     ticks: { font: { size: 11 }, stepSize: 20 },
@@ -330,12 +339,12 @@ function dibujarGraficos() {
         },
         plugins: [ChartDataLabels]
     });
-    // ----------- FIN GRAFICA COMPARATIVA -----------
+    // ----------- FIN GRAFICA -----------
 
     // KPIs y alertas
     let porEpp = {};
     filtrados.forEach(d => {
-        let key = d['DESCRIPCION'] || 'Sin dato';
+        let key = d['DESCRIPCION'] || 'Sin dato / 无数据';
         let cantidad = parseFloat(d['CANTIDAD']) || 0;
         porEpp[key] = (porEpp[key] || 0) + cantidad;
     });
@@ -343,7 +352,9 @@ function dibujarGraficos() {
     tiposEntregaList.forEach(tipo => entregasPorTipo[tipo] = 0);
     filtrados.forEach(d => {
         tiposEntregaList.forEach(tipo => {
-            let val = parseFloat(d[tipo]);
+            let k = tipo.split(' / ')[0];
+            let kcn = tipo.split(' / ')[1];
+            let val = parseFloat(d[k]) || parseFloat(d[kcn]);
             if (!isNaN(val) && val > 0) entregasPorTipo[tipo] += val;
         });
     });
@@ -421,8 +432,8 @@ function mostrarAlertas(filtrados) {
     // 1. LO QUE MÁS AUMENTÓ (por área)
     let areaMes = {};
     filtrados.forEach(d => {
-        let area = d['AREA'] || 'Sin dato';
-        let mes = dateToISO(d['FECHA']) ? dateToISO(d['FECHA']).substring(0, 7) : 'Sin dato';
+        let area = d['AREA'] || 'Sin dato / 无数据';
+        let mes = dateToISO(d['FECHA']) ? dateToISO(d['FECHA']).substring(0, 7) : 'Sin dato / 无数据';
         areaMes[area] = areaMes[area] || {};
         areaMes[area][mes] = (areaMes[area][mes] || 0) + (parseFloat(d['CANTIDAD']) || 0);
     });
@@ -447,7 +458,7 @@ function mostrarAlertas(filtrados) {
         });
     }
     if (maxAumento.area && maxAumento.variacion > 0) {
-        alertas.push(`<div class="alerta-row aumento-rojo">El área <b>${maxAumento.area}</b> es la que más aumentó su consumo de EPP este mes (<b>${maxAumento.variacion.toFixed(1)}%</b> más)</div>`);
+        alertas.push(`<div class="alerta-row aumento-rojo">El área <b>${maxAumento.area}</b> es la que más aumentó su consumo de EPP este mes (<b>${maxAumento.variacion.toFixed(1)}%</b> más)<br>区域 <b>${maxAumento.area}</b> 本月劳保消耗增幅最大 (<b>${maxAumento.variacion.toFixed(1)}%</b> 增长)</div>`);
     }
 
     // 2. LO QUE MÁS SE EXTRAVIÓ (por EPP)
@@ -459,7 +470,7 @@ function mostrarAlertas(filtrados) {
         if (!fecha) return;
         let f = new Date(fecha);
         if (f >= hace3m) {
-            let epp = d['DESCRIPCION'] || 'Sin dato';
+            let epp = d['DESCRIPCION'] || 'Sin dato / 无数据';
             let extravios = parseInt(d['EXTRAVIO']) || 0;
             if (extravios > 0) {
                 extraviosPorEPP[epp] = (extraviosPorEPP[epp] || 0) + extravios;
@@ -472,21 +483,21 @@ function mostrarAlertas(filtrados) {
         let clase = maxExtravios[1] > 40 ? "alerta-row extravio-rojo"
             : maxExtravios[1] > 15 ? "alerta-row extravio-naranja"
             : "alerta-row extravio-verde";
-        alertas.push(`<div class="${clase}">Lo que más se extravió/perdió fue <b>${maxExtravios[0]}</b> (<b>${maxExtravios[1]}</b> en el último trimestre)</div>`);
+        alertas.push(`<div class="${clase}">Lo que más se extravió/perdió fue <b>${maxExtravios[0]}</b> (<b>${maxExtravios[1]}</b> en el último trimestre)<br>丢失/遗失最多的是 <b>${maxExtravios[0]}</b>（近三个月共 <b>${maxExtravios[1]}</b> 件）</div>`);
     }
 
     // 3. LO QUE MÁS SE CAMBIÓ (por EPP)
     let cambioPorEPP = {};
     filtrados.forEach(d => {
-        let epp = d['DESCRIPCION'] || 'Sin dato';
+        let epp = d['DESCRIPCION'] || 'Sin dato / 无数据';
         let cambio = parseInt(d['CAMBIO']) || 0;
         if (cambio > 0) cambioPorEPP[epp] = (cambioPorEPP[epp] || 0) + cambio;
     });
     let maxCambio = Object.entries(cambioPorEPP)
         .sort((a, b) => b[1] - a[1])[0];
     if (maxCambio && maxCambio[1] > 0) {
-        alertas.push(`<div class="alerta-row aumento-naranja">Lo que más se cambió fue <b>${maxCambio[0]}</b> (<b>${maxCambio[1]}</b> cambios)</div>`);
+        alertas.push(`<div class="alerta-row aumento-naranja">Lo que más se cambió fue <b>${maxCambio[0]}</b> (<b>${maxCambio[1]}</b> cambios)<br>更换最多的是 <b>${maxCambio[0]}</b>（共 <b>${maxCambio[1]}</b> 次）</div>`);
     }
 
-    document.getElementById('alertas').innerHTML = alertas.length ? alertas.join("") : "<div style='color:#888;'>Sin alertas relevantes.</div>";
+    document.getElementById('alertas').innerHTML = alertas.length ? alertas.join("") : "<div style='color:#888;'>Sin alertas relevantes. / 暂无相关预警。</div>";
 }
