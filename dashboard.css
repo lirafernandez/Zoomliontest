@@ -190,6 +190,32 @@ canvas {
         min-height: 120px;
     }
 }
+.tabla-nombres {
+    background: #f8fff4;
+    border-radius: 12px;
+    margin: 20px auto 30px auto;
+    max-width: 800px;
+    padding: 18px 24px 16px 24px;
+    box-shadow: 0 2px 10px #4bb84922;
+    border: 1.5px solid #b4e28d;
+}
+.tabla-nombres h3 {
+    margin-top: 0;
+    font-size: 1.2em;
+    font-weight: 900;
+    color: #2e7b32;
+    letter-spacing: 1px;
+    text-align: center;
+}
+#tablaNombres {
+    font-size: 1.08em;
+    color: #215623;
+    margin-top: 10px;
+    max-height: 270px;
+    overflow-y: auto;
+    white-space: pre-line;
+    border-radius: 6px;
+}
 
 /* ---- ALERTAS COLOR ESCALA ---- */
 .alerta-row {
