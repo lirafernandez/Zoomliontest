@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard EPP - Zoomlion</title>
+    <title>Dashboard EPP - Zoomlion / 劳保用品看板 - Zoomlion</title>
     <link rel="stylesheet" href="dashboard.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
@@ -11,58 +11,58 @@
 <body>
     <div class="header-zoomlion">
         <img src="1157.HK_BIG (1).png" class="logo-zoomlion" alt="Zoomlion logo" />
-        <h1>Dashboard EPP <span class="zoomlion-name">ZOOMLION</span></h1>
+        <h1>Dashboard EPP / 劳保用品看板 <span class="zoomlion-name">ZOOMLION</span></h1>
     </div>
     <div id="alertas" class="alertas-green"></div>
     <div class="filtros">
-        <label>Área: <select id="areaFilter"></select></label>
-        <label>Descripción: <select id="descFilter"></select></label>
-        <label>Tipo de Entrega: <select id="tipoEntregaFilter"></select></label>
-        <label>Desde: <input type="date" id="desdeFilter"></label>
-        <label>Hasta: <input type="date" id="hastaFilter"></label>
-        <button onclick="resetFiltros()">Restablecer filtros</button>
+        <label>Área / 区域: <select id="areaFilter"></select></label>
+        <label>Descripción / 描述: <select id="descFilter"></select></label>
+        <label>Tipo de Entrega / 发放类型: <select id="tipoEntregaFilter"></select></label>
+        <label>Desde / 从: <input type="date" id="desdeFilter"></label>
+        <label>Hasta / 到: <input type="date" id="hastaFilter"></label>
+        <button onclick="resetFiltros()">Restablecer filtros / 重置筛选</button>
     </div>
     <div class="kpis">
         <div class="kpi kpi-total">
-            <div>Total Entregas</div>
+            <div>Total Entregas / 发放总数</div>
             <b id="kpiTotalEntregas">0</b>
         </div>
         <div class="kpi kpi-gasto">
-            <div>Total Gasto</div>
+            <div>Total Gasto / 总支出</div>
             <b id="kpiTotalGasto">$0</b>
         </div>
         <div class="kpi kpi-tipos">
-            <div>Tipos de EPP</div>
+            <div>Tipos de EPP / 劳保种类</div>
             <b id="kpiTiposEPP">0</b>
         </div>
         <div class="kpi kpi-top-epp">
-            <div>EPP con más flujo</div>
+            <div>EPP con más flujo / 流通最多劳保</div>
             <b id="kpiTopEPP">N/A</b>
         </div>
         <div class="kpi kpi-top-tipo">
-            <div>Tipo Entrega Top</div>
+            <div>Tipo Entrega Top / 最多发放类型</div>
             <b id="kpiTipoEntregaTop">N/A</b>
         </div>
         <div class="kpi kpi-top-area">
-            <div>Área que más consumió</div>
+            <div>Área que más consumió / 消耗最多区域</div>
             <b id="kpiAreaTop">N/A</b>
         </div>
     </div>
     <div class="graficos">
         <div class="grafico-caja">
-            <h3>Gasto total mensual</h3>
+            <h3>Gasto total mensual / 每月总支出</h3>
             <canvas id="gastoMesChart"></canvas>
         </div>
         <div class="grafico-caja">
-            <h3>Evolución mensual por tipo de entrega</h3>
+            <h3>Evolución mensual por tipo de entrega / 各类型每月趋势</h3>
             <canvas id="evolucionTipoEntregaChart"></canvas>
         </div>
         <div class="grafico-caja">
-            <h3>Top 5 EPP más usados/cambiados</h3>
+            <h3>Top 5 EPP más usados/cambiados / 最常用/更换前五劳保</h3>
             <canvas id="eppMasUsadosChart"></canvas>
         </div>
         <div class="grafico-caja grafico-comparativa-area">
-            <h3>Comparativa de Gasto vs Cantidad entregada por Área</h3>
+            <h3>Comparativa de Gasto vs Cantidad entregada por Área<br>区域支出与发放对比</h3>
             <canvas id="gastoVsCantidadAreaChart"></canvas>
         </div>
     </div>
