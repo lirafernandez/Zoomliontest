@@ -22,6 +22,16 @@ window.onload = function () {
         });
     document.getElementById('desdeFilter').addEventListener('change', dibujarGraficos);
     document.getElementById('hastaFilter').addEventListener('change', dibujarGraficos);
+
+    // Listener para el filtro de nombre (input)
+    setTimeout(function() {
+        var busquedaInput = document.getElementById('busquedaNombre');
+        if (busquedaInput) {
+            busquedaInput.addEventListener('input', function(){
+                mostrarNombres(filtrarDatos());
+            });
+        }
+    }, 100); // Pequeño delay para asegurar que el DOM esté listo
 };
 
 function csvToJson(csv) {
@@ -363,8 +373,12 @@ function dibujarGraficos() {
     mostrarAlertas(filtrados);
     mostrarNombres(filtrados);
 }
-// Mostrar lista de nombres que recibieron EPP y tipo de entrega
+
+// Mostrar lista de nombres que recibieron EPP y tipo de entrega con filtro de nombre optimizado
 function mostrarNombres(filtrados) {
+    const filtroTexto = (document.getElementById('busquedaNombre')?.value || '').trim().toLowerCase();
+    const palabras = filtroTexto.split(/\s+/).filter(Boolean); // Split y elimina espacios extra
+
     if (!filtrados.length) {
         document.getElementById('tablaNombres').innerHTML = "<span style='color:#888;'>No hay entregas en el periodo seleccionado.<br>选定期间无发放记录。</span>";
         return;
@@ -406,7 +420,11 @@ function mostrarNombres(filtrados) {
             }
         });
     });
-    let nombresUnicos = Object.keys(personas).sort((a, b) => a.localeCompare(b, 'es', {sensitivity:'base'}));
+
+    let nombresUnicos = Object.keys(personas)
+        .filter(nombre => palabras.every(palabra => nombre.toLowerCase().includes(palabra)))
+        .sort((a, b) => a.localeCompare(b, 'es', {sensitivity:'base'}));
+
     if (nombresUnicos.length === 0) {
         document.getElementById('tablaNombres').innerHTML = "<span style='color:#888;'>No hay entregas en el periodo seleccionado.<br>选定期间无发放记录。</span>";
         return;
@@ -438,7 +456,6 @@ function mostrarNombres(filtrados) {
     html += "</tbody></table>";
     document.getElementById('tablaNombres').innerHTML = html;
 }
-
 
 function graficar(id, tipo, labels, data, titulo, color, tipoForzado, showValues, extraOptions = {}) {
     if (charts[id]) charts[id].destroy();
