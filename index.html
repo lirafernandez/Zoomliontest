@@ -68,7 +68,14 @@
     </div>
     <div class="tabla-nombres">
         <h3>Personas que recibieron EPP en el periodo seleccionado / 选定期间领取劳保人员</h3>
-        <div id="tablaNombres"></div>
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+    <input type="text" id="busquedaNombre" placeholder="Buscar por nombre..." style="width:220px; font-size:1em; padding:4px 8px; border-radius:6px; border:1.5px solid #b4e28d;">
+    <button id="btnBuscarNombre" style="padding:4px 14px; border-radius:6px; background:#47b74f; color:#fff; font-weight:700; border:none; cursor:pointer;">Buscar</button>
+</div>
+<div style="font-size:0.98em;color:#236030;margin-bottom:9px;">
+    Escribe nombre completo, apellido o varias palabras. Prueba en mayúsculas/minúsculas para mejores resultados.
+    <br><span style="color:#388e3c;">Ejemplo: "Juan", "Fernandez", "Fernandez Juan", "JUAN FERNANDEZ"</span>
+</div>        <div id="tablaNombres"></div>
     </div>
 </body>
 </html>
